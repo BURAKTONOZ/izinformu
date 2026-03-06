@@ -22,12 +22,13 @@
         .row div { flex: 1; }
         
         /* Özel Alanlar */
-        .file-input { background: #fff3cd; border: 1px dashed #856404; padding: 15px; border-radius: 6px; margin-bottom: 25px;}
-        .personel-secim { background: #e8f4fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-bottom: 20px; }
+        .info-box { background: #e8f4fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-bottom: 20px; text-align: center; color: #004a99; font-weight: bold;}
+        .personel-secim { background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #856404; margin-bottom: 20px; }
         
         /* Buton */
         button { width: 100%; padding: 15px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; transition: background 0.3s; }
         button:hover { background: #003366; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -35,9 +36,8 @@
 <div class="card">
     <h2>BELTAŞ A.Ş. İZİN FORMU</h2>
     
-    <div class="group file-input">
-        <label>📄 Şablon PDF Dosyasını Seçin (izinformu.pdf)</label>
-        <input type="file" id="pdfFile" accept="application/pdf">
+    <div class="info-box">
+        ✅ Şablon PDF (izinformu.pdf) sistemden otomatik olarak çekilmektedir. Dosya yüklemenize gerek yoktur.
     </div>
 
     <div class="group personel-secim">
@@ -146,7 +146,7 @@
         </div>
     </div>
 
-    <button onclick="formuOlustur()">PDF OLUŞTUR VE İNDİR</button>
+    <button id="olusturBtn" onclick="formuOlustur()">PDF OLUŞTUR VE İNDİR</button>
 </div>
 
 <script>
@@ -193,26 +193,30 @@
     }
 
     // ==========================================
-    // 3. PDF OLUŞTURMA İŞLEVİ (Manuel Yükleme)
+    // 3. PDF OLUŞTURMA İŞLEVİ (GitHub Üzerinden Otomatik Çekme)
     // ==========================================
     async function formuOlustur() {
-        const fileInput = document.getElementById('pdfFile');
-        
-        if (fileInput.files.length === 0) {
-            alert("Lütfen en üstten PDF şablon dosyasını seçin!");
-            return;
-        }
+        const btn = document.getElementById("olusturBtn");
+        btn.disabled = true;
+        btn.innerText = "PDF HAZIRLANIYOR... LÜTFEN BEKLEYİN";
 
         try {
-            const file = fileInput.files[0];
-            const arrayBuffer = await file.arrayBuffer();
-
             if (typeof PDFLib === 'undefined') {
-                alert("PDF kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.");
-                return;
+                throw new Error("PDF kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.");
             }
 
-            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            // --- GITHUB'DAN PDF ÇEKME İŞLEMİ ---
+            // 'izinformu.pdf' dosyası GitHub deponda HTML ile aynı yerde olmalı!
+            let pdfBytes;
+            try {
+                 const res = await fetch('izinformu.pdf');
+                 if (!res.ok) throw new Error("Dosya bulunamadı");
+                 pdfBytes = await res.arrayBuffer();
+            } catch (fetchError) {
+                 throw new Error("izinformu.pdf dosyası bulunamadı! Lütfen GitHub deponuzda dosyanın adının tam olarak 'izinformu.pdf' olduğuna emin olun.");
+            }
+
+            const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
             
             // Türkçe Font Ayarları
             pdfDoc.registerFontkit(fontkit);
@@ -251,8 +255,8 @@
             page.drawText(data.gorev, { x: 115, y: 648, size: fSize, font: turkceFont });
             page.drawText(data.sicil, { x: 323, y: 648, size: fSize, font: turkceFont });
             page.drawText(data.gun, { x: 115, y: 622, size: fSize, font: turkceFont });
-            page.drawText(data.bas, { x: 340, y: 595, size: fSize, font: turkceFont });
-            page.drawText(data.bit, { x: 125, y: 595, size: fSize, font: turkceFont });
+            page.drawText(data.bas, { x: 125, y: 595, size: fSize, font: turkceFont });
+            page.drawText(data.bit, { x: 340, y: 595, size: fSize, font: turkceFont });
             page.drawText(data.adres, { x: 125, y: 480, size: fSize, font: turkceFont });
             page.drawText(data.tel, { x: 125, y: 450, size: fSize, font: turkceFont });
             page.drawText(data.goreveBaslama, { x: 350, y: 622, size: fSize, font: turkceFont });
@@ -282,6 +286,9 @@
         } catch (error) {
             console.error("HATA BİLGİSİ:", error);
             alert("İşlem sırasında bir hata oluştu: \n" + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "PDF OLUŞTUR VE İNDİR";
         }
     }
 </script>
