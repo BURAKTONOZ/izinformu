@@ -316,7 +316,9 @@
 
             let pdfBytes;
             try {
-                 const res = await fetch('izinformu.pdf');
+                 // DİKKAT: Tarayıcının eski dosyayı hafızadan getirmesini engellemek için sonuna rastgele rakam ekliyoruz
+                 const cacheKirici = new Date().getTime();
+                 const res = await fetch('izinformu.pdf?v=' + cacheKirici);
                  if (!res.ok) throw new Error("Dosya bulunamadı");
                  pdfBytes = await res.arrayBuffer();
             } catch (fetchError) {
@@ -325,9 +327,14 @@
 
             const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
             
-            // PDF Başlık (Sekme Adı) Düzeltmesi
+            // --- AGRESİF PDF BAŞLIK TEMİZLİĞİ ---
+            // Sadece başlığı değil, yazar ve oluşturucu gibi tüm meta verileri eziyoruz (Excel ismini yok eder)
             pdfDoc.setTitle('BELTAŞ İzin Formu');
+            pdfDoc.setAuthor('BELTAŞ A.Ş.');
+            pdfDoc.setSubject('İzin Formu');
             pdfDoc.setCreator('BELTAŞ A.Ş.');
+            pdfDoc.setProducer('BELTAŞ A.Ş.');
+            // ------------------------------------
             
             pdfDoc.registerFontkit(fontkit);
             const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
@@ -359,14 +366,14 @@
                 belgeTarihi: formatDate(document.getElementById('belgeTarihi').value)
             };
 
-            // KOORDİNATLAR (Başlangıç X:340, Bitiş X:125)
+            // KOORDİNATLAR (Başlangıç X:340, Bitiş X:125 Olarak Güncellendi)
             page.drawText(data.ad, { x: 115, y: 674, size: fSize, font: turkceFont });
             page.drawText(data.birim, { x: 323, y: 674, size: fSize, font: turkceFont });
             page.drawText(data.gorev, { x: 115, y: 648, size: fSize, font: turkceFont });
             page.drawText(data.sicil, { x: 323, y: 648, size: fSize, font: turkceFont });
             page.drawText(data.gun, { x: 115, y: 622, size: fSize, font: turkceFont });
-            page.drawText(data.bas, { x: 340, y: 595, size: fSize, font: turkceFont });
-            page.drawText(data.bit, { x: 125, y: 595, size: fSize, font: turkceFont });
+            page.drawText(data.bas, { x: 340, y: 595, size: fSize, font: turkceFont }); // BAŞLANGIÇ
+            page.drawText(data.bit, { x: 125, y: 595, size: fSize, font: turkceFont }); // BİTİŞ
             page.drawText(data.adres, { x: 125, y: 480, size: fSize, font: turkceFont });
             page.drawText(data.tel, { x: 125, y: 450, size: fSize, font: turkceFont });
             page.drawText(data.goreveBaslama, { x: 350, y: 622, size: fSize, font: turkceFont });
@@ -391,7 +398,7 @@
             hazirPdfBlob = new Blob([pdfBytesOut], { type: "application/pdf" });
             
             // Bellekteki PDF için özel bir URL oluştur ve sağ taraftaki iframe'e yansıt
-            const pdfUrl = URL.createObjectURL(hazirPdfBlob);
+            const pdfUrl = URL.createObjectURL(hazirPdfBlob) + '#toolbar=1&navpanes=0&scrollbar=0';
             document.getElementById('pdfPreview').src = pdfUrl;
 
             // Önizleme başarılıysa İndirme butonunu görünür yap
