@@ -11,46 +11,44 @@
         /* Modern ve Tam Ekran Genel Stil */
         body { 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); /* Şık arka plan gradiyenti */
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); 
             margin: 0; 
-            height: 100vh; /* Ekranın %100'ünü kaplar */
+            height: 100vh; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            overflow: hidden; /* Aşağı/Yukarı kaydırmayı tamamen iptal eder */
+            overflow: hidden; 
         }
 
         .card { 
-            background: rgba(255, 255, 255, 0.95); /* Hafif saydam modern beyaz */
+            background: rgba(255, 255, 255, 0.95); 
             padding: 20px 30px; 
             border-radius: 12px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
             width: 100%; 
-            max-width: 950px; /* Form yan yana dizileceği için genişletildi */
+            max-width: 950px; 
             box-sizing: border-box;
         }
 
         h2 { 
             color: #004a99; 
             text-align: center; 
-            margin: 0 0 15px 0; 
+            margin: 0 0 20px 0; 
             font-size: 22px; 
             border-bottom: 2px solid #e0eafc; 
-            padding-bottom: 10px; 
+            padding-bottom: 12px; 
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         
-        /* Grid (Izgara) Form Yapısı - Alanları yan yana sıkıştırır */
+        /* Grid (Izgara) Form Yapısı */
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4 Eşit Sütun */
-            gap: 12px 15px; /* Kutular arası boşluk */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 12px 15px; 
         }
 
         .group { display: flex; flex-direction: column; }
-        
-        /* Bazı alanların daha geniş olması için */
         .col-span-2 { grid-column: span 2; }
         .col-span-4 { grid-column: span 4; }
 
@@ -79,10 +77,8 @@
             box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
         }
 
-        /* Adres kutusunun çok fazla yer kaplamasını önlemek için */
         textarea { resize: none; height: 36px; }
 
-        /* Vurgulu Personel Seçimi */
         .personel-secim select {
             background-color: #f0f7ff;
             border-color: #004a99;
@@ -91,7 +87,6 @@
             cursor: pointer;
         }
 
-        /* Buton Tasarımı */
         button { 
             grid-column: span 4;
             width: 100%; 
@@ -113,7 +108,6 @@
         button:active { transform: translateY(1px); }
         button:disabled { background: #999; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* Çok küçük ekranlar için responsive koruma */
         @media (max-height: 600px) { body { overflow-y: auto; align-items: flex-start; } }
     </style>
 </head>
@@ -234,9 +228,6 @@
         "kaan": { ad: "KAAN TÜRK", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "BİLGİSAYAR TEKNİSYENİ", sicil: "N21035", goreveBaslama: "2021-02-15", tel: "0530 952 01 18", adres: "ANKARA" }
     };
 
-    // ==========================================
-    // 2. OTOMATİK DOLDURMA İŞLEVİ
-    // ==========================================
     function personelBilgileriniDoldur() {
         const secim = document.getElementById("personelSecimi").value;
         
@@ -260,9 +251,6 @@
         }
     }
 
-    // ==========================================
-    // 3. PDF OLUŞTURMA İŞLEVİ
-    // ==========================================
     async function formuOlustur() {
         const btn = document.getElementById("olusturBtn");
         btn.disabled = true;
@@ -283,6 +271,10 @@
             }
 
             const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+            
+            // --- PDF BAŞLIK (METADATA) DÜZELTMESİ ---
+            pdfDoc.setTitle('BELTAŞ İzin Formu');
+            pdfDoc.setCreator('BELTAŞ A.Ş.');
             
             pdfDoc.registerFontkit(fontkit);
             const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
@@ -314,6 +306,7 @@
                 belgeTarihi: formatDate(document.getElementById('belgeTarihi').value)
             };
 
+            // SENİN GÜNCELLEDİĞİN KOORDİNATLAR
             page.drawText(data.ad, { x: 115, y: 674, size: fSize, font: turkceFont });
             page.drawText(data.birim, { x: 323, y: 674, size: fSize, font: turkceFont });
             page.drawText(data.gorev, { x: 115, y: 648, size: fSize, font: turkceFont });
@@ -359,4 +352,3 @@
 
 </body>
 </html>
-
