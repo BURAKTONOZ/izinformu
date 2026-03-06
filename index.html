@@ -8,27 +8,113 @@
     <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
     
     <style>
-        /* Genel Stil Ayarları */
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; padding: 20px; display: flex; justify-content: center; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
-        h2 { color: #004a99; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        /* Modern ve Tam Ekran Genel Stil */
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); /* Şık arka plan gradiyenti */
+            margin: 0; 
+            height: 100vh; /* Ekranın %100'ünü kaplar */
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; /* Aşağı/Yukarı kaydırmayı tamamen iptal eder */
+        }
+
+        .card { 
+            background: rgba(255, 255, 255, 0.95); /* Hafif saydam modern beyaz */
+            padding: 20px 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            width: 100%; 
+            max-width: 950px; /* Form yan yana dizileceği için genişletildi */
+            box-sizing: border-box;
+        }
+
+        h2 { 
+            color: #004a99; 
+            text-align: center; 
+            margin: 0 0 15px 0; 
+            font-size: 22px; 
+            border-bottom: 2px solid #e0eafc; 
+            padding-bottom: 10px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
         
-        /* Form Elemanları */
-        .group { margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        input[type="date"] { font-family: 'Segoe UI', Arial, sans-serif; }
-        .row { display: flex; gap: 15px; }
-        .row div { flex: 1; }
+        /* Grid (Izgara) Form Yapısı - Alanları yan yana sıkıştırır */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 Eşit Sütun */
+            gap: 12px 15px; /* Kutular arası boşluk */
+        }
+
+        .group { display: flex; flex-direction: column; }
         
-        /* Özel Alanlar */
-        .info-box { background: #e8f4fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-bottom: 20px; text-align: center; color: #004a99; font-weight: bold;}
-        .personel-secim { background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #856404; margin-bottom: 20px; }
-        
-        /* Buton */
-        button { width: 100%; padding: 15px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; transition: background 0.3s; }
-        button:hover { background: #003366; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        /* Bazı alanların daha geniş olması için */
+        .col-span-2 { grid-column: span 2; }
+        .col-span-4 { grid-column: span 4; }
+
+        label { 
+            font-size: 12px; 
+            font-weight: 600; 
+            margin-bottom: 4px; 
+            color: #444; 
+        }
+
+        input, select, textarea { 
+            width: 100%; 
+            padding: 8px 10px; 
+            border: 1px solid #c2c9d6; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 13px;
+            background-color: #fcfcfc;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #004a99;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
+        }
+
+        /* Adres kutusunun çok fazla yer kaplamasını önlemek için */
+        textarea { resize: none; height: 36px; }
+
+        /* Vurgulu Personel Seçimi */
+        .personel-secim select {
+            background-color: #f0f7ff;
+            border-color: #004a99;
+            font-weight: bold;
+            color: #004a99;
+            cursor: pointer;
+        }
+
+        /* Buton Tasarımı */
+        button { 
+            grid-column: span 4;
+            width: 100%; 
+            padding: 12px; 
+            background: #004a99; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: bold; 
+            margin-top: 10px; 
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover { background: #003366; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0, 74, 153, 0.3); }
+        button:active { transform: translateY(1px); }
+        button:disabled { background: #999; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Çok küçük ekranlar için responsive koruma */
+        @media (max-height: 600px) { body { overflow-y: auto; align-items: flex-start; } }
     </style>
 </head>
 <body>
@@ -36,33 +122,28 @@
 <div class="card">
     <h2>BELTAŞ A.Ş. İZİN FORMU</h2>
     
-    <div class="info-box">
-        ✅ Şablon PDF (izinformu.pdf) sistemden otomatik olarak çekilmektedir. Dosya yüklemenize gerek yoktur.
-    </div>
+    <div class="form-grid">
+        <div class="group col-span-4 personel-secim">
+            <label>👤 Kayıtlı Personel Seç (Otomatik Doldurur)</label>
+            <select id="personelSecimi" onchange="personelBilgileriniDoldur()">
+                <option value="seciniz">Manuel Dolduracağım...</option>
+                <option value="burak">BURAK TONOZ</option>
+                <option value="halil">HALİL DEDE KÖKSAL</option>
+                <option value="büşray">BUŞRA YILMAZEL</option>
+                <option value="büşrab">BÜŞRA BAL</option>
+                <option value="batuhan">BATUHAN DURMAZ</option>
+                <option value="deniz">DENİZ CAN KUNDAK</option>
+                <option value="emine">EMİNE HÜSÜNSEVER</option>
+                <option value="fulya">FULYA SEVİNDİ</option>
+                <option value="ilkim">İLKİM GÜLÇE TOPÇU AKTEPE</option>
+                <option value="kaan">KAAN TÜRK</option>
+            </select>
+        </div>
 
-    <div class="group personel-secim">
-        <label>👤 Kayıtlı Personel Seç (Otomatik Doldurur)</label>
-        <select id="personelSecimi" onchange="personelBilgileriniDoldur()">
-            <option value="seciniz">Manuel Dolduracağım...</option>
-            <option value="burak">BURAK TONOZ</option>
-            <option value="halil">HALİL DEDE KÖKSAL</option>
-            <option value="büşray">BUŞRA YILMAZEL</option>
-            <option value="büşrab">BÜŞRA BAL</option>
-            <option value="batuhan">BATUHAN DURMAZ</option>
-            <option value="deniz">DENİZ CAN KUNDAK</option>
-            <option value="emine">EMİNE HÜSÜNSEVER</option>
-            <option value="fulya">FULYA SEVİNDİ</option>
-            <option value="ilkim">İLKİM GÜLÇE TOPÇU AKTEPE</option>
-            <option value="kaan">KAAN TÜRK</option>
-        </select>
-    </div>
-
-    <div class="group">
-        <label>Adı Soyadı</label>
-        <input type="text" id="ad" placeholder="Ad Soyad">
-    </div>
-
-    <div class="row">
+        <div class="group col-span-2">
+            <label>Adı Soyadı</label>
+            <input type="text" id="ad" placeholder="Ad Soyad">
+        </div>
         <div class="group">
             <label>Birim</label>
             <input type="text" id="birim" placeholder="Çalıştığı Birim">
@@ -71,9 +152,7 @@
             <label>Görev</label>
             <input type="text" id="gorev" placeholder="Görevi">
         </div>
-    </div>
 
-    <div class="row">
         <div class="group">
             <label>Sicil No</label>
             <input type="text" id="sicil" placeholder="Sicil Numarası">
@@ -82,9 +161,6 @@
             <label>Göreve Başlama Tarihi</label>
             <input type="date" id="goreveBaslama">
         </div>
-    </div>
-
-    <div class="row">
         <div class="group">
             <label>İzin Türü</label>
             <select id="izinTuru">
@@ -102,9 +178,7 @@
             <label>İzin Süresi (Gün)</label>
             <input type="text" id="izinGun" placeholder="Örn: 5">
         </div>
-    </div>
 
-    <div class="row">
         <div class="group">
             <label>İzin Başlangıç Tarihi</label>
             <input type="date" id="baslangic">
@@ -113,9 +187,6 @@
             <label>İzin Bitiş Tarihi</label>
             <input type="date" id="bitis">
         </div>
-    </div>
-
-    <div class="row">
         <div class="group">
             <label>Avans İsteği</label>
             <select id="avansIstek">
@@ -128,14 +199,11 @@
             <label>Avans Miktarı</label>
             <input type="text" id="avansMiktar" placeholder="Örn: 5000 ₺">
         </div>
-    </div>
 
-    <div class="group">
-        <label>İzindeki Adres</label>
-        <textarea id="adres" rows="2" placeholder="İzinde bulunacağı adres..."></textarea>
-    </div>
-
-    <div class="row">
+        <div class="group col-span-2">
+            <label>İzindeki Adres</label>
+            <textarea id="adres" placeholder="İzinde bulunacağı adres..."></textarea>
+        </div>
         <div class="group">
             <label>Telefon No</label>
             <input type="text" id="tel" placeholder="05xx xxx xx xx">
@@ -144,9 +212,9 @@
             <label>Belge Düzenleme Tarihi</label>
             <input type="date" id="belgeTarihi">
         </div>
-    </div>
 
-    <button id="olusturBtn" onclick="formuOlustur()">PDF OLUŞTUR VE İNDİR</button>
+        <button id="olusturBtn" onclick="formuOlustur()">PDF OLUŞTUR VE İNDİR</button>
+    </div>
 </div>
 
 <script>
@@ -193,7 +261,7 @@
     }
 
     // ==========================================
-    // 3. PDF OLUŞTURMA İŞLEVİ (GitHub Üzerinden Otomatik Çekme)
+    // 3. PDF OLUŞTURMA İŞLEVİ
     // ==========================================
     async function formuOlustur() {
         const btn = document.getElementById("olusturBtn");
@@ -205,8 +273,6 @@
                 throw new Error("PDF kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.");
             }
 
-            // --- GITHUB'DAN PDF ÇEKME İŞLEMİ ---
-            // 'izinformu.pdf' dosyası GitHub deponda HTML ile aynı yerde olmalı!
             let pdfBytes;
             try {
                  const res = await fetch('izinformu.pdf');
@@ -218,7 +284,6 @@
 
             const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
             
-            // Türkçe Font Ayarları
             pdfDoc.registerFontkit(fontkit);
             const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
             const fontBytesResult = await fetch(fontUrl).then(res => res.arrayBuffer());
@@ -249,7 +314,6 @@
                 belgeTarihi: formatDate(document.getElementById('belgeTarihi').value)
             };
 
-            // Yazdırma İşlemleri
             page.drawText(data.ad, { x: 115, y: 674, size: fSize, font: turkceFont });
             page.drawText(data.birim, { x: 323, y: 674, size: fSize, font: turkceFont });
             page.drawText(data.gorev, { x: 115, y: 648, size: fSize, font: turkceFont });
