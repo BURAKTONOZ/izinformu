@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELTAŞ İzin Formu Hazırlayıcı</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
+    
+    <style>
+        /* Genel Stil Ayarları */
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
+        h2 { color: #004a99; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        
+        /* Form Elemanları */
+        .group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input[type="date"] { font-family: 'Segoe UI', Arial, sans-serif; }
+        .row { display: flex; gap: 15px; }
+        .row div { flex: 1; }
+        
+        /* Özel Alanlar */
+        .file-input { background: #fff3cd; border: 1px dashed #856404; padding: 15px; border-radius: 6px; margin-bottom: 25px;}
+        .personel-secim { background: #e8f4fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-bottom: 20px; }
+        
+        /* Buton */
+        button { width: 100%; padding: 15px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; transition: background 0.3s; }
+        button:hover { background: #003366; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>BELTAŞ A.Ş. İZİN FORMU</h2>
+    
+    <div class="group file-input">
+        <label>📄 Şablon PDF Dosyasını Seçin (izinformu.pdf)</label>
+        <input type="file" id="pdfFile" accept="application/pdf">
+    </div>
+
+    <div class="group personel-secim">
+        <label>👤 Kayıtlı Personel Seç (Otomatik Doldurur)</label>
+        <select id="personelSecimi" onchange="personelBilgileriniDoldur()">
+            <option value="seciniz">Manuel Dolduracağım...</option>
+            <option value="burak">BURAK TONOZ</option>
+            <option value="halil">HALİL DEDE KÖKSAL</option>
+            <option value="büşray">BUŞRA YILMAZEL</option>
+            <option value="büşrab">BÜŞRA BAL</option>
+            <option value="batuhan">BATUHAN DURMAZ</option>
+            <option value="deniz">DENİZ CAN KUNDAK</option>
+            <option value="emine">EMİNE HÜSÜNSEVER</option>
+            <option value="fulya">FULYA SEVİNDİ</option>
+            <option value="ilkim">İLKİM GÜLÇE TOPÇU AKTEPE</option>
+            <option value="kaan">KAAN TÜRK</option>
+        </select>
+    </div>
+
+    <div class="group">
+        <label>Adı Soyadı</label>
+        <input type="text" id="ad" placeholder="Ad Soyad">
+    </div>
+
+    <div class="row">
+        <div class="group">
+            <label>Birim</label>
+            <input type="text" id="birim" placeholder="Çalıştığı Birim">
+        </div>
+        <div class="group">
+            <label>Görev</label>
+            <input type="text" id="gorev" placeholder="Görevi">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="group">
+            <label>Sicil No</label>
+            <input type="text" id="sicil" placeholder="Sicil Numarası">
+        </div>
+        <div class="group">
+            <label>Göreve Başlama Tarihi</label>
+            <input type="date" id="goreveBaslama">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="group">
+            <label>İzin Türü</label>
+            <select id="izinTuru">
+                <option value="yillik">Yıllık</option>
+                <option value="ucretsiz">Ücretsiz</option>
+                <option value="mazeret">Mazeret</option>
+                <option value="olum">Ölüm</option>
+                <option value="dogum">Doğum</option>
+                <option value="evlenme">Evlenme</option>
+                <option value="afet">Afet</option>
+                <option value="sendika">Sendika</option>
+            </select>
+        </div>
+        <div class="group">
+            <label>İzin Süresi (Gün)</label>
+            <input type="text" id="izinGun" placeholder="Örn: 5">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="group">
+            <label>İzin Başlangıç Tarihi</label>
+            <input type="date" id="baslangic">
+        </div>
+        <div class="group">
+            <label>İzin Bitiş Tarihi</label>
+            <input type="date" id="bitis">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="group">
+            <label>Avans İsteği</label>
+            <select id="avansIstek">
+                <option value="bos">Seçiniz...</option>
+                <option value="istiyorum">İstiyorum</option>
+                <option value="istemiyorum">İstemiyorum</option>
+            </select>
+        </div>
+        <div class="group">
+            <label>Avans Miktarı</label>
+            <input type="text" id="avansMiktar" placeholder="Örn: 5000 ₺">
+        </div>
+    </div>
+
+    <div class="group">
+        <label>İzindeki Adres</label>
+        <textarea id="adres" rows="2" placeholder="İzinde bulunacağı adres..."></textarea>
+    </div>
+
+    <div class="row">
+        <div class="group">
+            <label>Telefon No</label>
+            <input type="text" id="tel" placeholder="05xx xxx xx xx">
+        </div>
+        <div class="group">
+            <label>Belge Düzenleme Tarihi</label>
+            <input type="date" id="belgeTarihi">
+        </div>
+    </div>
+
+    <button onclick="formuOlustur()">PDF OLUŞTUR VE İNDİR</button>
+</div>
+
+<script>
+    // ==========================================
+    // 1. PERSONEL VERİTABANI
+    // ==========================================
+    const personelVerileri = {
+        "burak": { ad: "BURAK TONOZ", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "HARİTA MÜHENDİSİ", sicil: "N21019", goreveBaslama: "2021-02-15", tel: "0544 182 22 90", adres: "ANKARA" },
+        "halil": { ad: "HALİL DEDE KÖKSAL", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "HARİTA TEKNİKERİ", sicil: "N21011", goreveBaslama: "2021-02-15", tel: "0507 414 72 89", adres: "ANKARA" },
+        "büşray": { ad: "BUŞRA YILMAZEL", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "HARİTA MÜHENDİSİ", sicil: "N21017", goreveBaslama: "2021-02-15", tel: "0542 344 64 22", adres: "ANKARA" },
+        "büşrab": { ad: "BÜŞRA BAL", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "HARİTA TEKNİKERİ", sicil: "N21006", goreveBaslama: "2021-02-15", tel: "0538 837 80 48", adres: "ANKARA" },
+        "batuhan": { ad: "BATUHAN DURMAZ", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "İNŞAAT TEKNİKERİ", sicil: "N21014", goreveBaslama: "2021-02-15", tel: "0546 257 22 88", adres: "ANKARA" },
+        "deniz": { ad: "DENİZ CAN KUNDAK", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "BİLGİSAYAR TEKNİSYENİ", sicil: "N21037", goreveBaslama: "2021-02-15", tel: "0536 494 69 29", adres: "ANKARA" },
+        "emine": { ad: "EMİNE HÜSÜNSEVER", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "HARİTA TEKNİKERİ", sicil: "N21001", goreveBaslama: "2021-02-15", tel: "0551 811 05 23", adres: "ANKARA" },
+        "fulya": { ad: "FULYA SEVİNDİ", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "BİLGİSAYAR TEKNİSYENİ", sicil: "N21031", goreveBaslama: "2021-02-15", tel: "0537 961 77 25", adres: "ANKARA" },
+        "ilkim": { ad: "İLKİM GÜLÇE TOPÇU AKTEPE", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "BİLGİSAYAR TEKNİSYENİ", sicil: "N21038", goreveBaslama: "2021-02-15", tel: "0544 565 03 15", adres: "ANKARA" },
+        "kaan": { ad: "KAAN TÜRK", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "BİLGİSAYAR TEKNİSYENİ", sicil: "N21035", goreveBaslama: "2021-02-15", tel: "0530 952 01 18", adres: "ANKARA" }
+    };
+
+    // ==========================================
+    // 2. OTOMATİK DOLDURMA İŞLEVİ
+    // ==========================================
+    function personelBilgileriniDoldur() {
+        const secim = document.getElementById("personelSecimi").value;
+        
+        if (secim !== "seciniz" && personelVerileri[secim]) {
+            const p = personelVerileri[secim];
+            document.getElementById("ad").value = p.ad;
+            document.getElementById("birim").value = p.birim;
+            document.getElementById("gorev").value = p.gorev;
+            document.getElementById("sicil").value = p.sicil;
+            document.getElementById("goreveBaslama").value = p.goreveBaslama;
+            document.getElementById("tel").value = p.tel;
+            document.getElementById("adres").value = p.adres;
+        } else {
+            document.getElementById("ad").value = "";
+            document.getElementById("birim").value = "";
+            document.getElementById("gorev").value = "";
+            document.getElementById("sicil").value = "";
+            document.getElementById("goreveBaslama").value = "";
+            document.getElementById("tel").value = "";
+            document.getElementById("adres").value = "";
+        }
+    }
+
+    // ==========================================
+    // 3. PDF OLUŞTURMA İŞLEVİ (Manuel Yükleme)
+    // ==========================================
+    async function formuOlustur() {
+        const fileInput = document.getElementById('pdfFile');
+        
+        if (fileInput.files.length === 0) {
+            alert("Lütfen en üstten PDF şablon dosyasını seçin!");
+            return;
+        }
+
+        try {
+            const file = fileInput.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+
+            if (typeof PDFLib === 'undefined') {
+                alert("PDF kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.");
+                return;
+            }
+
+            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            
+            // Türkçe Font Ayarları
+            pdfDoc.registerFontkit(fontkit);
+            const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
+            const fontBytesResult = await fetch(fontUrl).then(res => res.arrayBuffer());
+            const turkceFont = await pdfDoc.embedFont(fontBytesResult);
+
+            const page = pdfDoc.getPages()[0];
+            const fSize = 10;
+
+            const formatDate = (dateStr) => {
+                if (!dateStr) return "";
+                return dateStr.split('-').reverse().join('/');
+            };
+
+            const data = {
+                ad: document.getElementById('ad').value.toLocaleUpperCase('tr-TR'),
+                birim: document.getElementById('birim').value,
+                gorev: document.getElementById('gorev').value,
+                sicil: document.getElementById('sicil').value,
+                gun: document.getElementById('izinGun').value,
+                adres: document.getElementById('adres').value,
+                tel: document.getElementById('tel').value,
+                tur: document.getElementById('izinTuru').value,
+                bas: formatDate(document.getElementById('baslangic').value),
+                bit: formatDate(document.getElementById('bitis').value),
+                goreveBaslama: formatDate(document.getElementById('goreveBaslama').value),
+                avansIstek: document.getElementById('avansIstek').value,
+                avansMiktar: document.getElementById('avansMiktar').value,
+                belgeTarihi: formatDate(document.getElementById('belgeTarihi').value)
+            };
+
+            // Yazdırma İşlemleri
+            page.drawText(data.ad, { x: 115, y: 674, size: fSize, font: turkceFont });
+            page.drawText(data.birim, { x: 323, y: 674, size: fSize, font: turkceFont });
+            page.drawText(data.gorev, { x: 115, y: 648, size: fSize, font: turkceFont });
+            page.drawText(data.sicil, { x: 323, y: 648, size: fSize, font: turkceFont });
+            page.drawText(data.gun, { x: 115, y: 622, size: fSize, font: turkceFont });
+            page.drawText(data.bas, { x: 340, y: 595, size: fSize, font: turkceFont });
+            page.drawText(data.bit, { x: 125, y: 595, size: fSize, font: turkceFont });
+            page.drawText(data.adres, { x: 125, y: 480, size: fSize, font: turkceFont });
+            page.drawText(data.tel, { x: 125, y: 450, size: fSize, font: turkceFont });
+            page.drawText(data.goreveBaslama, { x: 350, y: 622, size: fSize, font: turkceFont });
+            page.drawText(data.avansMiktar, { x: 320, y: 509, size: fSize, font: turkceFont });
+            page.drawText(data.ad, { x: 388, y: 417, size: fSize, font: turkceFont });
+            page.drawText(data.belgeTarihi, { x: 192, y: 404, size: fSize, font: turkceFont });
+
+            const izinKutuX = { 'yillik': 143, 'ucretsiz': 193, 'mazeret': 238, 'olum': 281, 'dogum': 320, 'evlenme': 357, 'afet': 401, 'sendika': 439 };
+            const izinSabitY = 551; 
+            if(izinKutuX[data.tur]) {
+                page.drawText('X', { x: izinKutuX[data.tur], y: izinSabitY, size: 12, font: turkceFont });
+            }
+
+            const avansKutuX = { 'istiyorum': 168, 'istemiyorum': 228 };
+            const avansSabitY = 509; 
+            if(avansKutuX[data.avansIstek]) {
+                page.drawText('X', { x: avansKutuX[data.avansIstek], y: avansSabitY, size: 12, font: turkceFont });
+            }
+
+            const pdfBytesOut = await pdfDoc.save();
+            const blob = new Blob([pdfBytesOut], { type: "application/pdf" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `BELTAS_Izin_${data.ad}.pdf`;
+            link.click();
+
+        } catch (error) {
+            console.error("HATA BİLGİSİ:", error);
+            alert("İşlem sırasında bir hata oluştu: \n" + error.message);
+        }
+    }
+</script>
+
+</body>
+</html>
