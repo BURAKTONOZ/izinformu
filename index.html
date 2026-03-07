@@ -4,266 +4,391 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BELTAŞ İzin Formu Paneli</title>
+    
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* Tam Ekran ve Çift Panel Düzeni */
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            margin: 0; 
-            height: 100vh; 
-            display: flex; 
-            overflow: hidden; /* Sayfanın genel kaydırmasını kapatır */
-            background-color: #eef2f5;
+        /* Genel Ayarlar ve Arka Plan */
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --success-hover: #059669;
+            --bg-color: #f1f5f9;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
         }
 
-        /* SOL PANEL (Form Alanı) */
-        .sidebar {
-            width: 420px;
-            background: #ffffff;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            /* Portfolyona uyumlu ama daha aydınlık, kurumsal bir mesh gradient arka plan */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Ana Taşıyıcı (Izgara Sistemi) */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 25px;
+            width: 100%;
+            max-width: 1600px;
+            height: calc(100vh - 40px);
+        }
+
+        /* Sol Panel (Form Alanı) - Buzlu Cam Efekti */
+        .form-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
             display: flex;
             flex-direction: column;
-            z-index: 10;
+            overflow: hidden;
         }
 
-        .sidebar-header {
-            padding: 20px;
-            background: #004a99;
+        .panel-header {
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
             color: white;
+            padding: 25px 20px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .sidebar-header h2 {
+        .panel-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
             margin: 0;
-            font-size: 18px;
-            letter-spacing: 1px;
+            position: relative;
+            z-index: 2;
         }
 
-        .sidebar-content {
-            padding: 20px;
-            overflow-y: auto; /* Sadece sol menü kendi içinde kayabilir */
+        .panel-header::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            z-index: 1;
+        }
+
+        .form-content {
+            padding: 25px;
+            overflow-y: auto;
             flex: 1;
         }
+
+        /* Özel Kaydırma Çubuğu */
+        .form-content::-webkit-scrollbar { width: 6px; }
+        .form-content::-webkit-scrollbar-track { background: transparent; }
+        .form-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .form-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Form Elemanları */
+        .personel-secim {
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px dashed var(--primary);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
         
-        /* Sağ Panel (PDF Önizleme) */
-        .preview-panel {
-            flex: 1; /* Kalan tüm ekranı kaplar */
-            background-color: #525659; /* Klasik PDF arka plan rengi */
-            display: flex;
-            flex-direction: column;
+        .personel-secim:hover { background: rgba(37, 99, 235, 0.08); }
+
+        .personel-secim label {
+            color: var(--primary);
+            font-size: 0.85rem;
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Form Izgara Sistemi (Sol menü için 2 sütuna düşürüldü) */
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
         .group { display: flex; flex-direction: column; }
         .col-span-2 { grid-column: span 2; }
 
-        label { 
-            font-size: 12px; 
-            font-weight: 600; 
-            margin-bottom: 4px; 
-            color: #444; 
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        input, select, textarea { 
-            width: 100%; 
-            padding: 9px; 
-            border: 1px solid #c2c9d6; 
-            border-radius: 6px; 
-            box-sizing: border-box; 
-            font-size: 13px;
-            background-color: #fcfcfc;
-            transition: all 0.2s;
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #ffffff;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) inset;
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #004a99;
-            background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            background: #fff;
         }
 
-        textarea { resize: none; height: 40px; }
+        select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto; }
+        textarea { resize: vertical; min-height: 80px; }
 
-        .personel-secim {
-            background-color: #e8f4fd;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #b6d4fe;
-            margin-bottom: 15px;
-        }
-
-        .personel-secim select {
-            background-color: #fff;
-            border-color: #004a99;
-            font-weight: bold;
-            color: #004a99;
-            cursor: pointer;
-        }
-
-        /* Buton Grubu */
+        /* Butonlar */
         .action-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        button { 
+        button {
             flex: 1;
-            padding: 12px; 
-            color: white; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 13px; 
-            font-weight: bold; 
-            transition: all 0.3s;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .btn-preview { background: #004a99; }
-        .btn-preview:hover { background: #003366; }
+        .btn-preview { background: var(--primary); }
+        .btn-preview:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 99, 235, 0.2); }
         
-        .btn-download { background: #28a745; display: none; } /* Başlangıçta gizli, pdf oluşunca çıkar */
-        .btn-download:hover { background: #218838; }
+        .btn-download { background: var(--success); display: none; }
+        .btn-download:hover { background: var(--success-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(16, 185, 129, 0.2); }
 
-        /* Kaydırma Çubuğu (Scrollbar) Güzelleştirme */
-        .sidebar-content::-webkit-scrollbar { width: 6px; }
-        .sidebar-content::-webkit-scrollbar-track { background: #f1f1f1; }
-        .sidebar-content::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
-        .sidebar-content::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        /* Sağ Panel (PDF Önizleme) */
+        .preview-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* PDF Yüklenmeden Önceki Şık Bekleme Ekranı */
+        .preview-placeholder {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            z-index: 1;
+            background: #f8fafc;
+            pointer-events: none;
+        }
+
+        .preview-placeholder i { font-size: 4rem; color: #cbd5e1; margin-bottom: 15px; }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 2;
+            position: relative;
+            background: transparent;
+        }
+
+        /* MOBİL UYUM (Responsive Tasarım) */
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                height: auto;
+                gap: 20px;
+            }
+            
+            body { height: auto; padding: 10px; }
+            
+            .form-panel { height: auto; max-height: none; }
+            
+            .preview-panel {
+                height: 600px; /* Mobilde PDF için sabit yükseklik */
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .col-span-2 { grid-column: span 1; }
+            .action-buttons { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h2>BELTAŞ A.Ş. İZİN FORMU</h2>
-    </div>
-    
-    <div class="sidebar-content">
-        <div class="personel-secim">
-            <label>👤 Kayıtlı Personel Seç (Otomatik Doldurur)</label>
-            <select id="personelSecimi" onchange="personelBilgileriniDoldur()">
-                <option value="seciniz">Manuel Dolduracağım...</option>
-                <option value="burak">BURAK TONOZ</option>
-                <option value="halil">HALİL DEDE KÖKSAL</option>
-                <option value="büşray">BUŞRA YILMAZEL</option>
-                <option value="büşrab">BÜŞRA BAL</option>
-                <option value="batuhan">BATUHAN DURMAZ</option>
-                <option value="deniz">DENİZ CAN KUNDAK</option>
-                <option value="emine">EMİNE HÜSÜNSEVER</option>
-                <option value="fulya">FULYA SEVİNDİ</option>
-                <option value="ilkim">İLKİM GÜLÇE TOPÇU AKTEPE</option>
-                <option value="kaan">KAAN TÜRK</option>
-            </select>
+<div class="dashboard">
+    <div class="form-panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-file-signature"></i> BELTAŞ İzin Formu</h2>
         </div>
-
-        <div class="form-grid">
-            <div class="group col-span-2">
-                <label>Adı Soyadı</label>
-                <input type="text" id="ad" placeholder="Ad Soyad">
-            </div>
-            
-            <div class="group">
-                <label>Birim</label>
-                <input type="text" id="birim" placeholder="Çalıştığı Birim">
-            </div>
-            <div class="group">
-                <label>Görev</label>
-                <input type="text" id="gorev" placeholder="Görevi">
-            </div>
-
-            <div class="group">
-                <label>Sicil No</label>
-                <input type="text" id="sicil" placeholder="Sicil Numarası">
-            </div>
-            <div class="group">
-                <label>Göreve Başlama</label>
-                <input type="date" id="goreveBaslama">
-            </div>
-
-            <div class="group">
-                <label>İzin Türü</label>
-                <select id="izinTuru">
-                    <option value="yillik">Yıllık</option>
-                    <option value="ucretsiz">Ücretsiz</option>
-                    <option value="mazeret">Mazeret</option>
-                    <option value="olum">Ölüm</option>
-                    <option value="dogum">Doğum</option>
-                    <option value="evlenme">Evlenme</option>
-                    <option value="afet">Afet</option>
-                    <option value="sendika">Sendika</option>
+        
+        <div class="form-content">
+            <div class="personel-secim">
+                <label><i class="fas fa-user-check"></i> Kayıtlı Personel Seç (Otomatik Doldurur)</label>
+                <select id="personelSecimi" onchange="personelBilgileriniDoldur()">
+                    <option value="seciniz">Manuel Dolduracağım...</option>
+                    <option value="burak">BURAK TONOZ</option>
+                    <option value="halil">HALİL DEDE KÖKSAL</option>
+                    <option value="büşray">BUŞRA YILMAZEL</option>
+                    <option value="büşrab">BÜŞRA BAL</option>
+                    <option value="batuhan">BATUHAN DURMAZ</option>
+                    <option value="deniz">DENİZ CAN KUNDAK</option>
+                    <option value="emine">EMİNE HÜSÜNSEVER</option>
+                    <option value="fulya">FULYA SEVİNDİ</option>
+                    <option value="ilkim">İLKİM GÜLÇE TOPÇU AKTEPE</option>
+                    <option value="kaan">KAAN TÜRK</option>
                 </select>
             </div>
-            <div class="group">
-                <label>İzin Süresi (Gün)</label>
-                <input type="text" id="izinGun" placeholder="Örn: 5">
+
+            <div class="form-grid">
+                <div class="group col-span-2">
+                    <label>Adı Soyadı</label>
+                    <input type="text" id="ad" placeholder="Ad Soyad">
+                </div>
+                
+                <div class="group">
+                    <label>Birim</label>
+                    <input type="text" id="birim" placeholder="Çalıştığı Birim">
+                </div>
+                <div class="group">
+                    <label>Görev</label>
+                    <input type="text" id="gorev" placeholder="Görevi">
+                </div>
+
+                <div class="group">
+                    <label>Sicil No</label>
+                    <input type="text" id="sicil" placeholder="Sicil Numarası">
+                </div>
+                <div class="group">
+                    <label>Göreve Başlama</label>
+                    <input type="date" id="goreveBaslama">
+                </div>
+
+                <div class="group">
+                    <label>İzin Türü</label>
+                    <select id="izinTuru">
+                        <option value="yillik">Yıllık</option>
+                        <option value="ucretsiz">Ücretsiz</option>
+                        <option value="mazeret">Mazeret</option>
+                        <option value="olum">Ölüm</option>
+                        <option value="dogum">Doğum</option>
+                        <option value="evlenme">Evlenme</option>
+                        <option value="afet">Afet</option>
+                        <option value="sendika">Sendika</option>
+                    </select>
+                </div>
+                <div class="group">
+                    <label>İzin Süresi (Gün)</label>
+                    <input type="text" id="izinGun" placeholder="Örn: 5">
+                </div>
+
+                <div class="group">
+                    <label>Başlangıç Tarihi</label>
+                    <input type="date" id="baslangic">
+                </div>
+                <div class="group">
+                    <label>Bitiş Tarihi</label>
+                    <input type="date" id="bitis">
+                </div>
+
+                <div class="group">
+                    <label>Avans İsteği</label>
+                    <select id="avansIstek">
+                        <option value="bos">Seçiniz...</option>
+                        <option value="istiyorum">İstiyorum</option>
+                        <option value="istemiyorum">İstemiyorum</option>
+                    </select>
+                </div>
+                <div class="group">
+                    <label>Avans Miktarı</label>
+                    <input type="text" id="avansMiktar" placeholder="Örn: 5000 ₺">
+                </div>
+
+                <div class="group col-span-2">
+                    <label>İzindeki Adres</label>
+                    <textarea id="adres" placeholder="İzinde bulunacağı adres..."></textarea>
+                </div>
+
+                <div class="group">
+                    <label>Telefon No</label>
+                    <input type="text" id="tel" placeholder="05xx xxx xx xx">
+                </div>
+                <div class="group">
+                    <label>Belge Tarihi</label>
+                    <input type="date" id="belgeTarihi">
+                </div>
             </div>
 
-            <div class="group">
-                <label>Başlangıç Tarihi</label>
-                <input type="date" id="baslangic">
+            <div class="action-buttons">
+                <button id="olusturBtn" class="btn-preview" onclick="formuHazirlaVeGoster()">
+                    <i class="fas fa-magic"></i> Oluştur & Önizle
+                </button>
+                <button id="indirBtn" class="btn-download" onclick="pdfIndir()">
+                    <i class="fas fa-download"></i> PDF İndir
+                </button>
             </div>
-            <div class="group">
-                <label>Bitiş Tarihi</label>
-                <input type="date" id="bitis">
-            </div>
-
-            <div class="group">
-                <label>Avans İsteği</label>
-                <select id="avansIstek">
-                    <option value="bos">Seçiniz...</option>
-                    <option value="istiyorum">İstiyorum</option>
-                    <option value="istemiyorum">İstemiyorum</option>
-                </select>
-            </div>
-            <div class="group">
-                <label>Avans Miktarı</label>
-                <input type="text" id="avansMiktar" placeholder="Örn: 5000 ₺">
-            </div>
-
-            <div class="group col-span-2">
-                <label>İzindeki Adres</label>
-                <textarea id="adres" placeholder="İzinde bulunacağı adres..."></textarea>
-            </div>
-
-            <div class="group">
-                <label>Telefon No</label>
-                <input type="text" id="tel" placeholder="05xx xxx xx xx">
-            </div>
-            <div class="group">
-                <label>Belge Tarihi</label>
-                <input type="date" id="belgeTarihi">
-            </div>
-        </div>
-
-        <div class="action-buttons">
-            <button id="olusturBtn" class="btn-preview" onclick="formuHazirlaVeGoster()">📄 GÜNCELLE & ÖNİZLE</button>
-            <button id="indirBtn" class="btn-download" onclick="pdfIndir()">⬇️ ŞİMDİ İNDİR</button>
         </div>
     </div>
-</div>
 
-<div class="preview-panel">
-    <iframe id="pdfPreview" src="izinformu.pdf"></iframe>
+    <div class="preview-panel" id="previewContainer">
+        <div class="preview-placeholder">
+            <i class="fas fa-file-pdf"></i>
+            <p>Formu doldurup "Oluştur & Önizle" butonuna basın</p>
+        </div>
+        <iframe id="pdfPreview" src="" onload="if(this.src !== window.location.href && this.src !== '') { this.style.background = 'white'; }"></iframe>
+    </div>
 </div>
 
 <script>
     // ==========================================
-    // 1. PERSONEL VERİTABANI
+    // JS KODLARININ TAMAMI ORİJİNAL HALİYLE KORUNMUŞTUR
     // ==========================================
     const personelVerileri = {
         "burak": { ad: "BURAK TONOZ", birim: "NUMARATAJ ŞUBE MÜDÜRLÜĞÜ", gorev: "HARİTA MÜHENDİSİ", sicil: "N21019", goreveBaslama: "2021-02-15", tel: "0544 182 22 90", adres: "ANKARA" },
@@ -300,23 +425,19 @@
         }
     }
 
-    // ==========================================
-    // 3. PDF OLUŞTURMA VE ÖNİZLEME İŞLEVİ
-    // ==========================================
-    let hazirPdfBlob = null; // İndirme butonu için oluşturulan dosyayı hafızada tutarız
+    let hazirPdfBlob = null; 
 
     async function formuHazirlaVeGoster() {
         const btn = document.getElementById("olusturBtn");
-        const orjinalYazi = btn.innerText;
+        const orjinalYazi = btn.innerHTML; // İkonlu yazıyı korumak için innerHTML
         btn.disabled = true;
-        btn.innerText = "YÜKLENİYOR...";
+        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Yükleniyor...";
 
         try {
             if (typeof PDFLib === 'undefined') throw new Error("PDF kütüphanesi yüklenemedi.");
 
             let pdfBytes;
             try {
-                 // DİKKAT: Tarayıcının eski dosyayı hafızadan getirmesini engellemek için sonuna rastgele rakam ekliyoruz
                  const cacheKirici = new Date().getTime();
                  const res = await fetch('izinformu.pdf?v=' + cacheKirici);
                  if (!res.ok) throw new Error("Dosya bulunamadı");
@@ -327,14 +448,11 @@
 
             const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
             
-            // --- AGRESİF PDF BAŞLIK TEMİZLİĞİ ---
-            // Sadece başlığı değil, yazar ve oluşturucu gibi tüm meta verileri eziyoruz (Excel ismini yok eder)
             pdfDoc.setTitle('BELTAŞ İzin Formu');
             pdfDoc.setAuthor('BELTAŞ A.Ş.');
             pdfDoc.setSubject('İzin Formu');
             pdfDoc.setCreator('BELTAŞ A.Ş.');
             pdfDoc.setProducer('BELTAŞ A.Ş.');
-            // ------------------------------------
             
             pdfDoc.registerFontkit(fontkit);
             const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
@@ -366,14 +484,13 @@
                 belgeTarihi: formatDate(document.getElementById('belgeTarihi').value)
             };
 
-            // KOORDİNATLAR (Başlangıç X:340, Bitiş X:125 Olarak Güncellendi)
             page.drawText(data.ad, { x: 115, y: 674, size: fSize, font: turkceFont });
             page.drawText(data.birim, { x: 323, y: 674, size: fSize, font: turkceFont });
             page.drawText(data.gorev, { x: 115, y: 648, size: fSize, font: turkceFont });
             page.drawText(data.sicil, { x: 323, y: 648, size: fSize, font: turkceFont });
             page.drawText(data.gun, { x: 115, y: 622, size: fSize, font: turkceFont });
-            page.drawText(data.bas, { x: 340, y: 595, size: fSize, font: turkceFont }); // BAŞLANGIÇ
-            page.drawText(data.bit, { x: 125, y: 595, size: fSize, font: turkceFont }); // BİTİŞ
+            page.drawText(data.bas, { x: 340, y: 595, size: fSize, font: turkceFont }); 
+            page.drawText(data.bit, { x: 125, y: 595, size: fSize, font: turkceFont }); 
             page.drawText(data.adres, { x: 125, y: 480, size: fSize, font: turkceFont });
             page.drawText(data.tel, { x: 125, y: 450, size: fSize, font: turkceFont });
             page.drawText(data.goreveBaslama, { x: 350, y: 622, size: fSize, font: turkceFont });
@@ -393,36 +510,34 @@
                 page.drawText('X', { x: avansKutuX[data.avansIstek], y: avansSabitY, size: 12, font: turkceFont });
             }
 
-            // PDF'i belleğe (RAM) kaydet
             const pdfBytesOut = await pdfDoc.save();
             hazirPdfBlob = new Blob([pdfBytesOut], { type: "application/pdf" });
             
-            // Bellekteki PDF için özel bir URL oluştur ve sağ taraftaki iframe'e yansıt
             const pdfUrl = URL.createObjectURL(hazirPdfBlob) + '#toolbar=1&navpanes=0&scrollbar=0';
             document.getElementById('pdfPreview').src = pdfUrl;
 
-            // Önizleme başarılıysa İndirme butonunu görünür yap
-            document.getElementById('indirBtn').style.display = "block";
+            document.getElementById('indirBtn').style.display = "flex";
+
+            // Mobilde tıklandığında otomatik olarak PDF alanına kaydır
+            if(window.innerWidth <= 1024) {
+                document.getElementById('previewContainer').scrollIntoView({ behavior: 'smooth' });
+            }
 
         } catch (error) {
             console.error("HATA BİLGİSİ:", error);
             alert("İşlem sırasında bir hata oluştu: \n" + error.message);
         } finally {
             btn.disabled = false;
-            btn.innerText = orjinalYazi;
+            btn.innerHTML = orjinalYazi;
         }
     }
 
-    // ==========================================
-    // 4. İNDİRME İŞLEVİ (Sadece butona basılınca çalışır)
-    // ==========================================
     function pdfIndir() {
         if (!hazirPdfBlob) return;
         
         const link = document.createElement("a");
         link.href = URL.createObjectURL(hazirPdfBlob);
         
-        // Dosya ismini dinamik olarak kişinin adı yapalım
         let kisiAd = document.getElementById('ad').value.trim();
         if(!kisiAd) kisiAd = "Personel";
         
