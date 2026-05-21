@@ -531,8 +531,8 @@
             // ONAY VEREN YETKİLİ PDF'E YAZDIRILIYOR
             if (data.onayYetkili !== "seciniz" && yetkiliVerileri[data.onayYetkili]) {
                 const yetkili = yetkiliVerileri[data.onayYetkili];
-                page.drawText(yetkili.ad, { x: 125, y: 100, size: fSize, font: turkceFont });
-                page.drawText(yetkili.unvan, { x: 125, y: 85, size: fSize, font: turkceFont });
+                page.drawText(yetkili.ad, { x: 125, y: 125, size: fSize, font: turkceFont });
+                page.drawText(yetkili.unvan, { x: 125, y: 110, size: fSize, font: turkceFont });
             }
 
             const pdfBytesOut = await pdfDoc.save();
